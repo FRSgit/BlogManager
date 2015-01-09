@@ -1,0 +1,42 @@
+ _________________________________
+/                                 \
+|            CHANGELOG            |
+\_________________________________/
+
+      vvvvvvvvvvvvvvvvvvvvvvv
+---=== Blog Manager ver. 0.4 ===---
+      ^^^^^^^^^^^^^^^^^^^^^^^
+
+         -----| PHP |-----
+
+- fixed condition when creating new blog or post
+
+- fixed blog list sorting (function: sort_md_arr_by_id -> ids to upper case)
+
+         -----| CSS |-----
+
+- removed white-space:nowrap from article class -> now post are rendered properly.
+- textareas in every form are now only vertical-resizable.
+
+
+      vvvvvvvvvvvvvvvvvvvvvvv
+---=== Blog Manager ver. 0.3 ===---
+      ^^^^^^^^^^^^^^^^^^^^^^^
+
+         -----| PHP |-----
+
+- Changed name of the first link in main menu : "Homepage" -> "Main"
+
+- corrected a typo in communicate: "blog you're looking for doesn't exist-->S<--" : "doesn't exists" -> "doesn't exist"
+
+- added sorting blog's posts & comments by time of creation
+
+- added sorting blog list by names
+
+- fixed label in new post form: label NAME="postTime" -> label FOR="postTime"
+
+- added closing to every input tag where it was missing : <input ... > -> <input ... />
+
+- added handling of multiple files by new post form,
+
+- fixed bug related to uploading attachments without extension, now it's working.
