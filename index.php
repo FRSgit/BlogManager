@@ -9,7 +9,7 @@ require_once 'header.php';
 		?>
 		<div id="main">
 			<h1>Welcome to Blog Manager v0.4!</h1>
-			<p>We are glad to see you here! To start using out application just choose any option from menu above.</p>
+			<p>We are glad to see you here! To start using the application just choose any option from menu above.</p>
 		</div>
 	</div>
 </body>

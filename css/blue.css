@@ -51,7 +51,7 @@ a{outline:0;}
 .formElem label{display:inline-block;vertical-align:top;width:45%;margin-right:5%;}
 .formElem .bad{display:block;}
 .formElem.form-btns{margin-top:60px;}
-.formElem.form-btns input{padding:10px;border-radius:8px;width:40%;border:0;background:#0C5DA5;font-size:1.143em;color:#fff;transition:ease .5s background-color;}
+.formElem.form-btns input{padding:10px;border-radius:8px;width:40%;border:0;outline:0;background:#0C5DA5;font-size:1.143em;color:#fff;transition:ease .5s background-color;}
 .formElem.form-btns input:first-child{margin-right:10%;}
 .formElem.form-btns input:last-child{margin-left:10%;}
 .formElem.form-btns input:hover{background:#3C3954;}

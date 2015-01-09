@@ -2,8 +2,8 @@
 window.addEventListener('load', JsLoadFunc, false);
 
 function JsLoadFunc(){
-	var stylesArr = document.styleSheets,
-		mainStyleSheet = document.preferredStyleSheetSet,
+	var usedStyleSheet,
+		stylesArr = document.styleSheets,
 		el = document.createElement('div');
 		el.id = "colorVer";
 		el.innerHTML = "Other versions of page:",
@@ -11,19 +11,16 @@ function JsLoadFunc(){
 
 	if(definedCookie!=""){
 		changePageStyle(definedCookie,1);
-		for(var i=0;i<stylesArr.length;i++){
-			if(definedCookie!=stylesArr[i].title)
-				el.innerHTML+=' <a href="#" onclick="changePageStyle(\''+stylesArr[i].title+'\');return false;">'+stylesArr[i].title+'</a>'
-			else
-				el.innerHTML+=' '+stylesArr[i].title;
-		}
-	}else{
-		for(var i=0;i<stylesArr.length;i++){
-			if(stylesArr[i].title==mainStyleSheet)
-				el.innerHTML+=' '+stylesArr[i].title;
-			else
-				el.innerHTML+=' <a href="#" onclick="changePageStyle(\''+stylesArr[i].title+'\');return false;">'+stylesArr[i].title+'</a>'	
-		}
+		usedStyleSheet = definedCookie;
+	}else
+		usedStyleSheet = (typeof document.preferredStyleSheetSet != 'undefined')?document.preferredStyleSheetSet:document.preferredStylesheetSet;
+
+	for(var i=0;i<stylesArr.length;i++){
+		if(usedStyleSheet==stylesArr[i].title)
+			el.innerHTML+=' '+usedStyleSheet;
+		else
+			el.innerHTML+=' <a href="#" onclick="changePageStyle(\''+stylesArr[i].title+'\');return false;">'+stylesArr[i].title+'</a>'
+			
 	}
 	document.getElementById("wrapper").appendChild(el);
 }
@@ -164,16 +161,14 @@ function changePageStyle(name, firstTime){
 
 	for (var i=0;i<links.length;i++){
 		if(links[i].rel.indexOf( "stylesheet" )!=-1 && links[i].title){
+			links[i].disabled = true;
 			if(links[i].title == name){
 				links[i].disabled = false;
 				setCookie("stylesheetName", name);
 				if(!firstTime)
 					innerHTML+=' '+name;
-			}else{
-				links[i].disabled = true;
-				if(!firstTime)
+			}else if(!firstTime)
 					innerHTML+=' <a href="#" onclick="changePageStyle(\''+links[i].title+'\');return false;">'+links[i].title+'</a>';
-			}
 		}
 	}
 	if(!firstTime){
