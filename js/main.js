@@ -133,7 +133,7 @@ function checkDate(date){
     if(year<1500)
     	return false;
 
-    if(month<=0 && month>12)
+    if(month<=0 || month>12)
     	return false;
 
     var months = [ 31, (year%4==0)?29:28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ];
