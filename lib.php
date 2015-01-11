@@ -1,6 +1,5 @@
 <?php
-/* -- CONFIG -- */
-$MAXIUMUM_ATTACHMENTS = 8;
+require_once("config.php");
 
 $error = "Sorry, we have encountered some technical issues. Error code: ";
 

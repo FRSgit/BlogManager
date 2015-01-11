@@ -1,12 +1,11 @@
 html,body{margin:0;color:#4E4D55;font:normal 14px "Verdana","Tahoma",sans-serif;}
-body{background-color:#C18A5E;}
+body{background-color:#C18A5E;overflow:hidden;}
 a{outline:0;}
 
 #wrapper{width:800px;margin:auto;}
 
-#menu{background:#FF8133;border-radius:0 0 8px 8px;}
-#menu ul{margin:0;padding:0;white-space:nowrap;}
-#menu li{display:inline-block;width:25%;text-align:center;transition:ease .5s background-color;}
+#menu{margin:0;padding:0;white-space:nowrap;}
+#menu li{background:#FF8133;display:inline-block;width:25%;text-align:center;transition:ease .5s background-color;}
 #menu li:first-child{border-radius:0 0 0 8px;}
 #menu li:last-child{border-radius:0 0 8px 0;}
 #menu li:hover{background:#4E4D55;}
@@ -43,7 +42,8 @@ a{outline:0;}
 .formWrapper{margin:0 15px;}
 .formElem{margin-bottom:.714em;white-space:nowrap;line-height:2em;}
 .formElem>label{width:50%;}
-.formElem>input,.formElem>select,.formElem>textarea{width:50%;padding:.5em 0 .5em 5px;resize:vertical;}
+.formElem>input,.formElem>select,.formElem>textarea{width:50%;padding:.5em 0 .5em 5px;}
+.formElem>textarea{resize:vertical;}
 .formElem>div{display:inline-block;width:50%;}
 .formElem>div>.block{margin-bottom:10px;}
 .formElem>div>.block:last-child{margin-bottom:0;}
@@ -62,3 +62,31 @@ a{outline:0;}
 .block,.text-right,.text-left{display:block;}
 .text-right{text-align:right;}
 .text-left{text-align:left;}
+
+.clear{clear:both;}
+
+/* -- FOOTER -- CHAT -- */
+#chat{position:absolute;bottom:-999px;left:0;width:100%;background:#FF8133;min-width:800px;transition:ease .6s bottom .2s;}
+#chatToggleOut{min-width:800px;margin:auto;}
+#chatToggleBtnIn{float:right;margin-top:-40px;margin-right:60px;padding:10px 21px 12px 15px;background:#FF8133;border-radius:8px 8px 0 0;color:#fff;font-size:1.143em;line-height:1em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
+#chatToggleBtnIn input{display:none;}
+#chatToggleBtnIn span{display:inline-block;height:18px;width:17px;margin:0 6px -5px 0;background-color:transparent;border:solid 2px #FAEFE7;border-radius:14px;transition:ease .4s background-color;}
+#chatToggleBtnIn.checked span{background-color:#FAEFE7;}
+#chatCont{margin:20px;background:#faefe7;border-radius:8px;}
+#msgsContOut{padding:12px 10px 0;}
+#msgsCont{width:100%;display:block;margin:0;padding-bottom:12px;background:transparent;border:0;border-bottom:solid 1px #ccc;box-sizing:border-box;resize:none;}
+#chatName,#chatMsg{padding:0 10px;margin:10px 0;line-height:1.143em;font-size:1em;text-align:right;background:transparent;border:0;border-right:solid 1px #ccc;box-sizing:border-box;}
+#chatLeft{width:180px;float:left;border-radius:0 0 0 8px;}
+#chatName{width:100%;}
+#chatRight{width:210px;float:right;padding-left:10px;text-align:right;line-height:2.5em;box-sizing:border-box;}
+#chatSend{height:36px;color:#fff;background:#FF8133 padding-box;border:solid 4px #FAEFE7;border-radius:12px;transition:ease .5s background-color;}
+#chatSend:hover{background:#4E4D55 padding-box;}
+#chatSend:active{background:#222226 padding-box;}
+#chatCenter{margin:0 210px 0 180px;}
+#chatSend.disabled{opacity:.8;}
+#chatSend.disabled:hover{background:#FF8133 padding-box;}
+#chatSend.disabled:active{background:#FF8133 padding-box;}
+#chatMsg{width:100%;}
+
+.bad{background:#FF5654;}
+#chat .bad input{color:#FAEFE7;border:0;}

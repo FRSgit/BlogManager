@@ -5,7 +5,7 @@ require_once 'header.php';
 <body>
 	<div id="wrapper">
 		<?php
-			require 'menu.php';
+			require_once 'menu.php';
 		?>
 		<div id="main">
 		<?php
@@ -107,5 +107,8 @@ require_once 'header.php';
 		?>
 		</div>
 	</div>
+	<?php
+		require_once 'footer.php';
+	?>
 </body>
 </html>

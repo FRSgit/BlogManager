@@ -2,27 +2,8 @@
 window.addEventListener('load', JsLoadFunc, false);
 
 function JsLoadFunc(){
-	var usedStyleSheet,
-		stylesArr = document.styleSheets,
-		el = document.createElement('div');
-		el.id = "colorVer";
-		el.innerHTML = "Other versions of page:",
-		definedCookie = getCookie("stylesheetName");
-
-	if(definedCookie!=""){
-		changePageStyle(definedCookie,1);
-		usedStyleSheet = definedCookie;
-	}else
-		usedStyleSheet = (typeof document.preferredStyleSheetSet != 'undefined')?document.preferredStyleSheetSet:document.preferredStylesheetSet;
-
-	for(var i=0;i<stylesArr.length;i++){
-		if(usedStyleSheet==stylesArr[i].title)
-			el.innerHTML+=' '+usedStyleSheet;
-		else
-			el.innerHTML+=' <a href="#" onclick="changePageStyle(\''+stylesArr[i].title+'\');return false;">'+stylesArr[i].title+'</a>'
-			
-	}
-	document.getElementById("wrapper").appendChild(el);
+	loadStylesheetsBtns();
+	handleChat();
 }
 
 /* SubPages */
@@ -97,7 +78,200 @@ function wpis(){
 	}	
 }
 
+/* -- GENERATING BUTTONS TO HANDLE ALTERNATE STYLESHEETS -- */
+
+function loadStylesheetsBtns(){
+	var usedStyleSheet,
+		stylesArr = document.styleSheets,
+		el = document.createElement('div');
+		el.id = "colorVer";
+		el.innerHTML = "Other versions of page:",
+		definedCookie = getCookie("stylesheetName");
+
+	if(definedCookie!=""){
+		changePageStyle(definedCookie,1);
+		usedStyleSheet = definedCookie;
+	}else
+		usedStyleSheet = (typeof document.preferredStyleSheetSet != 'undefined')?document.preferredStyleSheetSet:document.preferredStylesheetSet;
+
+	for(var i=0;i<stylesArr.length;i++){
+		if(usedStyleSheet==stylesArr[i].title)
+			el.innerHTML+=' '+usedStyleSheet;
+		else
+			el.innerHTML+=' <a href="#" onclick="changePageStyle(\''+stylesArr[i].title+'\');return false;">'+stylesArr[i].title+'</a>'
+	}
+	document.getElementById("wrapper").appendChild(el);
+}
+
+/* -- COMMUNICATOR -- */
+
+var lastChatDate,
+	blockAjax = false;
+
+function handleChat(){
+	document.getElementById("chat").style.bottom="-"+document.getElementById("chat").offsetHeight+"px";
+	lastChatDate = 1; // default init value
+	document.getElementById("toggleChat").onchange = function(){
+		toggleChatWindow();
+	}
+	
+}
+
+function toggleChatWindow(){
+	var chat = document.getElementById("chat"),
+		btmVal = "-"+chat.offsetHeight+"px";
+
+		if(chat.style.bottom==btmVal){
+			chat.style.bottom="0";
+			document.getElementById("chatToggleBtnIn").className="checked";
+			loadChatMsgs();
+			initChatValidation();
+		}else{
+			chat.style.bottom=btmVal;
+			document.getElementById("chatToggleBtnIn").className="";
+			removeChatValidation();
+		}
+}
+
+/* CHAT VALIDATION */
+
+function initChatValidation(){
+	chatNameValidator();
+	document.getElementById("chatName").addEventListener("change",chatValidator);
+	document.getElementById("chatMsg").addEventListener("change",chatValidator);
+	document.getElementById("chatSend").addEventListener("click",chatSendMsg);
+	document.addEventListener("keydown", chatEnterHandler);
+}
+
+function removeChatValidation(){
+	document.getElementById("chatName").removeEventListener("change",chatValidator);
+	document.getElementById("chatMsg").removeEventListener("change",chatValidator);
+	document.getElementById("chatSend").removeEventListener("click",chatSendMsg);
+	document.removeEventListener("keydown", chatEnterHandler);
+}
+
+function chatValidator(){
+	if(!chatNameValidator()){
+		document.getElementById("chatName").parentNode.className="bad";
+		chatDisableBtn();
+		return false;
+	}else
+		document.getElementById("chatName").parentNode.className="";
+
+	if(!chatMsgValidator()){
+		document.getElementById("chatMsg").parentNode.className="bad";
+		document.getElementById("chatSend").className="disabled";
+		document.getElementById("chatSend").disabled=true;
+		return false;
+	}else
+		document.getElementById("chatMsg").parentNode.className="";
+
+	chatEnableBtn();
+
+	return true;
+}
+
+function chatNameValidator(){
+	var val = document.getElementById("chatName").value;
+	return !(document.getElementById("chatMsg").disabled=(!val.length||val.length>30)?true:false);
+}
+
+function chatMsgValidator(){
+	var val = document.getElementById("chatMsg").value;
+	return (!val.length||val.length>400)?false:true;
+}
+
+function chatEnterHandler(e){
+    if(e.keyCode===13)
+        chatSendMsg();
+}
+
+function chatEnableBtn(){
+	document.getElementById("chatSend").className="";
+	document.getElementById("chatSend").disabled=false;
+}
+
+function chatDisableBtn(){
+	document.getElementById("chatSend").className="disabled";
+	document.getElementById("chatSend").disabled=true;
+}
+
+/* CHAT AJAX */
+function loadChatMsgs(){
+	if(!blockAjax){
+		blockAjax = true;
+		var httpRequest = new XMLHttpRequest();
+		httpRequest.onreadystatechange = handleRequest;
+		httpRequest.open('POST', './chat.php', true);
+		httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		httpRequest.send('chatDate='+lastChatDate);
+	}else
+		setTimeout(loadChatMsgs,4000);
+}
+
+function chatSendMsg(content){
+	if(chatValidator()){
+		content = (typeof content!=='undefined'&&typeof content==='string')?content:encodeHtml(document.getElementById("chatMsg").value);
+		document.getElementById("chatMsg").value = "";
+		if(!blockAjax){
+			blockAjax = true;
+			var httpRequest = new XMLHttpRequest(),
+				author = encodeHtml(document.getElementById("chatName").value);
+			
+			httpRequest.onreadystatechange = handleRequest; 
+			httpRequest.open('POST', './chat.php', true);
+			httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+			httpRequest.send('chatDate='+lastChatDate+'&chatAuthor="'+author+'"&chatContent="'+content+'"');
+		}else{
+			setTimeout(chatSendMsg(content),300);
+		}
+	}	
+}
+
+function handleRequest(e){
+	var httpRequest = e.target;
+	if(httpRequest.readyState === 4){
+		if(httpRequest.status === 200){
+			var response = JSON.parse(httpRequest.responseText),
+				msgsCont = document.getElementById("msgsCont");
+			if(!response.error&&response.error!=""){
+			    if(lastChatDate==1){
+			    	msgsCont.value=decodeResponse(response.content);
+			    	msgsCont.scrollTop = msgsCont.scrollHeight;
+			    }else if(response.content&&response.content!=""){
+			    	msgsCont.value+="\n"+decodeResponse(response.content);
+			    	msgsCont.scrollTop = msgsCont.scrollHeight;
+			    }
+
+				lastChatDate=response.date;
+				blockAjax = false;
+				if(!response.addMsg)
+					setTimeout(loadChatMsgs,4000);
+			}else
+				msgsCont.value = response.error;
+		}else 
+		    document.getElementById("msgsCont").value="Error!\nProblem with loading the chat!\nReload page and try again. If problem still occurs please contact the administration.";
+	}
+};
+
+function decodeResponse(r){
+	if(r&&r!=""){
+		return decodeHtml(r.trim());
+	}else
+		return "";
+}
+
 /* ADDITIONAL FUNCTIONS */
+function encodeHtml(html){
+	return (html&&html!="")?encodeURI(encodeURIComponent(html)):"";
+}
+
+function decodeHtml(html) {
+    var txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return decodeURIComponent(txt.value);
+}
+
 function setCookie(cname, cvalue, exdays) {
 	exdays = typeof exdays!=='undefined'?exdays:9999;
     var d = new Date();
