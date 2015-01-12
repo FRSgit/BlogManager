@@ -5,7 +5,6 @@ if(!empty($_POST)){
 		require_once("config.php");
 		$webDate = $_POST["chatDate"];
 		$newDate = $webDate;
-		$addMsg = false;
 		
 		$chatIntDate = explode(".",$webDate);
 		$chatIntDate = intval($chatIntDate[0]);
@@ -60,13 +59,12 @@ if(!empty($_POST)){
 				    $chatIntDate = explode(".",$newDate);
 					touch($CHAT_FILE_NAME,intval($chatIntDate[0]));
 
-					$addMsg = true;
 					sem_release($semafor);
 				}else
 					die('{"error":'.json_encode($error."#chat009 :\r\nCan`t acquire the semaphore.").'}');	
 			}
 		}
-		echo '{"content":'.(($resContent)?json_encode($resContent):'""').',"date":'.(($newDate!=$webDate)?$newDate:$webDate).(($addMsg)?',"addMsg":"true"':'').'}';
+		echo '{"content":'.(($resContent)?json_encode($resContent):'""').',"date":'.(($newDate!=$webDate)?$newDate:$webDate).'}';
 		
 	}else
 		echo '{"error":'.json_encode($error."#chat002 :\r\nCan`t parse messages.").'}';

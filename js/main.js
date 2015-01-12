@@ -106,10 +106,11 @@ function loadStylesheetsBtns(){
 /* -- COMMUNICATOR -- */
 
 var lastChatDate,
-	blockAjax = false;
+	blockAjax = false,
+	ajaxInterval;
 
 function handleChat(){
-	document.getElementById("chat").style.bottom="-"+document.getElementById("chat").offsetHeight+"px";
+	document.getElementById("chatHide").style.height=0;
 	lastChatDate = 1; // default init value
 	document.getElementById("toggleChat").onchange = function(){
 		toggleChatWindow();
@@ -118,36 +119,37 @@ function handleChat(){
 }
 
 function toggleChatWindow(){
-	var chat = document.getElementById("chat"),
-		btmVal = "-"+chat.offsetHeight+"px";
-
-		if(chat.style.bottom==btmVal){
-			chat.style.bottom="0";
-			document.getElementById("chatToggleBtnIn").className="checked";
-			loadChatMsgs();
-			initChatValidation();
-		}else{
-			chat.style.bottom=btmVal;
+	var chat = document.getElementById("chatHide"),
+		hVal = (document.getElementById("chatCont").offsetHeight+40)+"px";
+		if(chat.style.height==hVal){
+			chat.style.height="0";
 			document.getElementById("chatToggleBtnIn").className="";
-			removeChatValidation();
+			removeChat();
+		}else{
+			chat.style.height=hVal;
+			document.getElementById("chatToggleBtnIn").className="checked";
+			initChat();
 		}
 }
 
 /* CHAT VALIDATION */
 
-function initChatValidation(){
+function initChat(){
 	chatNameValidator();
 	document.getElementById("chatName").addEventListener("change",chatValidator);
 	document.getElementById("chatMsg").addEventListener("change",chatValidator);
 	document.getElementById("chatSend").addEventListener("click",chatSendMsg);
 	document.addEventListener("keydown", chatEnterHandler);
+	loadChatMsgs();
+	ajaxInterval = setInterval(loadChatMsgs,4000);
 }
 
-function removeChatValidation(){
+function removeChat(){
 	document.getElementById("chatName").removeEventListener("change",chatValidator);
 	document.getElementById("chatMsg").removeEventListener("change",chatValidator);
 	document.getElementById("chatSend").removeEventListener("click",chatSendMsg);
 	document.removeEventListener("keydown", chatEnterHandler);
+	clearInterval(ajaxInterval);
 }
 
 function chatValidator(){
@@ -205,8 +207,7 @@ function loadChatMsgs(){
 		httpRequest.open('POST', './chat.php', true);
 		httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 		httpRequest.send('chatDate='+lastChatDate);
-	}else
-		setTimeout(loadChatMsgs,4000);
+	}
 }
 
 function chatSendMsg(content){
@@ -245,8 +246,6 @@ function handleRequest(e){
 
 				lastChatDate=response.date;
 				blockAjax = false;
-				if(!response.addMsg)
-					setTimeout(loadChatMsgs,4000);
 			}else
 				msgsCont.value = response.error;
 		}else 

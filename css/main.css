@@ -1,5 +1,5 @@
 html,body{margin:0;color:#4E4D55;font:normal 14px "Verdana","Tahoma",sans-serif;}
-body{background-color:#C18A5E;overflow:hidden;}
+body{background-color:#C18A5E;}
 a{outline:0;}
 
 #wrapper{width:800px;margin:auto;}
@@ -66,12 +66,13 @@ a{outline:0;}
 .clear{clear:both;}
 
 /* -- FOOTER -- CHAT -- */
-#chat{position:absolute;bottom:-999px;left:0;width:100%;background:#FF8133;min-width:800px;transition:ease .6s bottom .2s;}
+#chat{position:fixed;bottom:0;left:0;width:100%;background:#FF8133;min-width:800px;}
 #chatToggleOut{min-width:800px;margin:auto;}
 #chatToggleBtnIn{float:right;margin-top:-40px;margin-right:60px;padding:10px 21px 12px 15px;background:#FF8133;border-radius:8px 8px 0 0;color:#fff;font-size:1.143em;line-height:1em;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 #chatToggleBtnIn input{display:none;}
 #chatToggleBtnIn span{display:inline-block;height:18px;width:17px;margin:0 6px -5px 0;background-color:transparent;border:solid 2px #FAEFE7;border-radius:14px;transition:ease .4s background-color;}
 #chatToggleBtnIn.checked span{background-color:#FAEFE7;}
+#chatHide{height:0;overflow:hidden;transition:ease .6s height .2s;}
 #chatCont{margin:20px;background:#faefe7;border-radius:8px;}
 #msgsContOut{padding:12px 10px 0;}
 #msgsCont{width:100%;display:block;margin:0;padding-bottom:12px;background:transparent;border:0;border-bottom:solid 1px #ccc;box-sizing:border-box;resize:none;}
