@@ -34,6 +34,8 @@ if(!empty($_POST)){
 		    else{
 		    	$semafor = sem_get(234567, 1);
 				if(sem_acquire($semafor)){
+				$chatAuthor = substr($chatAuthor,1,-1);
+				$chatContent = substr($chatContent,1,-1);
 			    	if(strlen($chatContent)>$CHAT_MAXLENGTH_MSG)
 			    		die('{"error":'.json_encode($error."#chat010 :\r\nCan`t add new message. Message content is too long.").'}');
 			    	if(strlen($chatAuthor)>$CHAT_MAXLENGTH_AUTHOR)
@@ -47,8 +49,7 @@ if(!empty($_POST)){
 			    			$linesLen--;
 			    		}
 				    }
-				    $chatAuthor = substr($chatAuthor,1,-1);
-				    $chatContent = substr($chatContent,1,-1);
+				    
 				    $newDate = microtime(get_as_float);
 
 				    array_push($lines,$newDate." ".$chatAuthor." ".$chatContent);

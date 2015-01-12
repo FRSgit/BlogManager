@@ -106,12 +106,11 @@ function loadStylesheetsBtns(){
 /* -- COMMUNICATOR -- */
 
 var lastChatDate,
-	blockAjax = false,
+	blockAjax,
 	ajaxInterval;
 
 function handleChat(){
 	document.getElementById("chatHide").style.height=0;
-	lastChatDate = 1; // default init value
 	document.getElementById("toggleChat").onchange = function(){
 		toggleChatWindow();
 	}
@@ -119,37 +118,73 @@ function handleChat(){
 }
 
 function toggleChatWindow(){
-	var chat = document.getElementById("chatHide"),
-		hVal = (document.getElementById("chatCont").offsetHeight+40)+"px";
-		if(chat.style.height==hVal){
+	var chat = document.getElementById("chatHide");
+		if(document.getElementById("toggleChat").checked){
+			chat.style.height=(document.getElementById("chatCont").offsetHeight+40)+"px";
+			document.getElementById("chatToggleBtnIn").className="checked";
+			initChat();
+		}else{
 			chat.style.height="0";
 			document.getElementById("chatToggleBtnIn").className="";
 			removeChat();
-		}else{
-			chat.style.height=hVal;
-			document.getElementById("chatToggleBtnIn").className="checked";
-			initChat();
 		}
 }
 
 /* CHAT VALIDATION */
 
 function initChat(){
+	var chatMsg = document.getElementById("chatMsg"),
+		chatSend = document.getElementById("chatSend");
+	
+	/* INIT VALUES */
+	lastChatDate = 1;
+	blockAjax = false;
+
+	chatName.disabled = false;
+	chatMsg.disabled = true;
+	
 	chatNameValidator();
+
 	document.getElementById("chatName").addEventListener("change",chatValidator);
-	document.getElementById("chatMsg").addEventListener("change",chatValidator);
-	document.getElementById("chatSend").addEventListener("click",chatSendMsg);
+	chatMsg.addEventListener("change",chatValidator);
+	chatSend.addEventListener("click",chatSendMsg);
 	document.addEventListener("keydown", chatEnterHandler);
 	loadChatMsgs();
 	ajaxInterval = setInterval(loadChatMsgs,4000);
 }
 
 function removeChat(){
-	document.getElementById("chatName").removeEventListener("change",chatValidator);
-	document.getElementById("chatMsg").removeEventListener("change",chatValidator);
-	document.getElementById("chatSend").removeEventListener("click",chatSendMsg);
+	var chatMsg = document.getElementById("chatMsg"),
+		chatSend = document.getElementById("chatSend"),
+		chatName= document.getElementById("chatName");
+	
+	chatName.disabled = true;
+	chatMsg.disabled = true;
+	chatSend.disabled = true;
+	chatSend.className = "disabled";
+
+	chatName.removeEventListener("change",chatValidator);
+	chatMsg .removeEventListener("change",chatValidator);
+	chatSend .removeEventListener("click",chatSendMsg);
 	document.removeEventListener("keydown", chatEnterHandler);
 	clearInterval(ajaxInterval);
+}
+
+function restartChat(msg){
+	document.getElementById("toggleChat").checked = false;
+	document.getElementById("chatToggleBtnIn").className="";
+	removeChat();
+
+	document.getElementById("msgsCont").value=msg+"\nRestarting.";
+	var tmpInterval = setInterval(function(){
+	    document.getElementById("msgsCont").value += ".";
+	},150);
+	setTimeout(function(){
+	    clearTimeout(tmpInterval);
+	    document.getElementById("toggleChat").checked = true;
+	    document.getElementById("chatToggleBtnIn").className="checked";
+	    initChat();
+	}, 8000);
 }
 
 function chatValidator(){
@@ -175,12 +210,12 @@ function chatValidator(){
 
 function chatNameValidator(){
 	var val = document.getElementById("chatName").value;
-	return !(document.getElementById("chatMsg").disabled=(!val.length||val.length>30)?true:false);
+	return !(document.getElementById("chatMsg").disabled=(!val.length||val.length>20)?true:false);
 }
 
 function chatMsgValidator(){
 	var val = document.getElementById("chatMsg").value;
-	return (!val.length||val.length>400)?false:true;
+	return (!val.length||val.length>250)?false:true;
 }
 
 function chatEnterHandler(e){
@@ -237,28 +272,21 @@ function handleRequest(e){
 				msgsCont = document.getElementById("msgsCont");
 			if(!response.error&&response.error!=""){
 			    if(lastChatDate==1){
-			    	msgsCont.value=decodeResponse(response.content);
+			    	msgsCont.value=decodeHtml(response.content.trim());
 			    	msgsCont.scrollTop = msgsCont.scrollHeight;
 			    }else if(response.content&&response.content!=""){
-			    	msgsCont.value+="\n"+decodeResponse(response.content);
+			    	msgsCont.value+="\n"+decodeHtml(response.content.trim());
 			    	msgsCont.scrollTop = msgsCont.scrollHeight;
 			    }
 
-				lastChatDate=response.date;
+				lastChatDate = response.date;
 				blockAjax = false;
 			}else
-				msgsCont.value = response.error;
-		}else 
-		    document.getElementById("msgsCont").value="Error!\nProblem with loading the chat!\nReload page and try again. If problem still occurs please contact the administration.";
+			    restartChat(response.error+"\nWe'll try to restart chat now.\nIf problem still occurs please contact the administration.");	
+		}else
+		    restartChat("Error!\nProblem with loading the chat!\nWe'll try to restart chat now.\nIf problem still occurs please contact the administration.");
 	}
 };
-
-function decodeResponse(r){
-	if(r&&r!=""){
-		return decodeHtml(r.trim());
-	}else
-		return "";
-}
 
 /* ADDITIONAL FUNCTIONS */
 function encodeHtml(html){
@@ -266,9 +294,12 @@ function encodeHtml(html){
 }
 
 function decodeHtml(html) {
-    var txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return decodeURIComponent(txt.value);
+	if(html&&html!=""){
+    		var txt = document.createElement("textarea");
+    		txt.innerHTML = html;
+    		return decodeURIComponent(txt.value);
+	}else
+		return "";
 }
 
 function setCookie(cname, cvalue, exdays) {
