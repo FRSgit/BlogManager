@@ -65,7 +65,7 @@ if(!empty($_POST)){
 					die('{"error":'.json_encode($error."#chat009 :\r\nCan`t acquire the semaphore.").'}');	
 			}
 		}
-		echo '{"content":'.(($resContent)?json_encode($resContent):'""').',"date":'.(($newDate!=$webDate)?$newDate:$webDate).'}';
+		echo '{'.(($resContent!="")?'"content":'.json_encode($resContent).',':'').'"date":'.(($newDate!=$webDate)?$newDate:$webDate).'}';
 		
 	}else
 		echo '{"error":'.json_encode($error."#chat002 :\r\nCan`t parse messages.").'}';

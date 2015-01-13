@@ -107,10 +107,14 @@ function loadStylesheetsBtns(){
 
 var lastChatDate,
 	blockAjax,
-	ajaxInterval;
+	ajaxInterval,
+	defNamePlaceholder,
+	defMsgPlaceholder;
 
 function handleChat(){
 	document.getElementById("chatHide").style.height=0;
+	defNamePlaceholder = document.getElementById("chatName").placeholder;
+	defMsgPlaceholder= document.getElementById("chatMsg").placeholder;
 	document.getElementById("toggleChat").onchange = function(){
 		toggleChatWindow();
 	}
@@ -134,20 +138,21 @@ function toggleChatWindow(){
 
 function initChat(){
 	var chatMsg = document.getElementById("chatMsg"),
-		chatSend = document.getElementById("chatSend");
+		chatName = document.getElementById("chatName");
 	
 	/* INIT VALUES */
 	lastChatDate = 1;
 	blockAjax = false;
 
 	chatName.disabled = false;
-	chatMsg.disabled = true;
-	
-	chatNameValidator();
+	chatName.placeholder = defNamePlaceholder;
+	chatMsg.disabled = false;
+	chatMsg.placeholder = defMsgPlaceholder;
+	chatEnableBtn();
 
-	document.getElementById("chatName").addEventListener("change",chatValidator);
-	chatMsg.addEventListener("change",chatValidator);
-	chatSend.addEventListener("click",chatSendMsg);
+	chatName.addEventListener("change",chatNameValidator);
+	chatMsg.addEventListener("change",chatMsgValidator);
+	document.getElementById("chatSend").addEventListener("click",chatSendMsg);
 	document.addEventListener("keydown", chatEnterHandler);
 	loadChatMsgs();
 	ajaxInterval = setInterval(loadChatMsgs,4000);
@@ -155,17 +160,15 @@ function initChat(){
 
 function removeChat(){
 	var chatMsg = document.getElementById("chatMsg"),
-		chatSend = document.getElementById("chatSend"),
 		chatName= document.getElementById("chatName");
 	
 	chatName.disabled = true;
 	chatMsg.disabled = true;
-	chatSend.disabled = true;
-	chatSend.className = "disabled";
+	chatDisableBtn();
 
-	chatName.removeEventListener("change",chatValidator);
-	chatMsg .removeEventListener("change",chatValidator);
-	chatSend .removeEventListener("click",chatSendMsg);
+	chatName.removeEventListener("change",chatNameValidator);
+	chatMsg.removeEventListener("change",chatMsgValidator);
+	document.getElementById("chatSend").removeEventListener("click",chatSendMsg);
 	document.removeEventListener("keydown", chatEnterHandler);
 	clearInterval(ajaxInterval);
 }
@@ -188,34 +191,44 @@ function restartChat(msg){
 }
 
 function chatValidator(){
-	if(!chatNameValidator()){
-		document.getElementById("chatName").parentNode.className="bad";
-		chatDisableBtn();
-		return false;
-	}else
-		document.getElementById("chatName").parentNode.className="";
+	var flag = true;
 
-	if(!chatMsgValidator()){
-		document.getElementById("chatMsg").parentNode.className="bad";
-		document.getElementById("chatSend").className="disabled";
-		document.getElementById("chatSend").disabled=true;
-		return false;
-	}else
-		document.getElementById("chatMsg").parentNode.className="";
+	if(!chatNameValidator())
+	    flag = false;
+
+	if(!chatMsgValidator())
+	    flag = false;
+
+	if(!flag)
+	    return flag;
 
 	chatEnableBtn();
 
-	return true;
+	return flag;
 }
 
 function chatNameValidator(){
 	var val = document.getElementById("chatName").value;
-	return !(document.getElementById("chatMsg").disabled=(!val.length||val.length>20)?true:false);
+	if(!val.length||val.length>20){
+	    document.getElementById("chatName").parentNode.className = "bad";
+	    document.getElementById("chatName").placeholder = "This field is required";
+	    return false;
+	}
+	document.getElementById("chatName").parentNode.className = "";
+	document.getElementById("chatName").placeholder = defNamePlaceholder;
+	return true;
 }
 
 function chatMsgValidator(){
 	var val = document.getElementById("chatMsg").value;
-	return (!val.length||val.length>250)?false:true;
+	if(!val.length||val.length>250){
+	    document.getElementById("chatMsg").parentNode.className = "bad";
+	    document.getElementById("chatMsg").placeholder = "This field is required to a send message";
+	    return false;
+	}
+	document.getElementById("chatMsg").parentNode.className = "";
+	document.getElementById("chatMsg").placeholder = defMsgPlaceholder;
+	return true;
 }
 
 function chatEnterHandler(e){
@@ -271,14 +284,13 @@ function handleRequest(e){
 			var response = JSON.parse(httpRequest.responseText),
 				msgsCont = document.getElementById("msgsCont");
 			if(!response.error&&response.error!=""){
-			    if(lastChatDate==1){
+			    if(lastChatDate==1)
 			    	msgsCont.value=decodeHtml(response.content.trim());
-			    	msgsCont.scrollTop = msgsCont.scrollHeight;
-			    }else if(response.content&&response.content!=""){
+			    else if(response.content&&response.content!="")
 			    	msgsCont.value+="\n"+decodeHtml(response.content.trim());
-			    	msgsCont.scrollTop = msgsCont.scrollHeight;
-			    }
 
+				msgsCont.scrollTop = msgsCont.scrollHeight;
+			    if(response.date&&response.date!="")
 				lastChatDate = response.date;
 				blockAjax = false;
 			}else

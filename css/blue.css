@@ -89,5 +89,5 @@ a{outline:0;}
 #chatSend.disabled:active{background:#0C5DA5 padding-box;}
 #chatMsg{width:100%;}
 
-.bad{background:#FF5654;}
+#chat .bad{background:#FF5654;}
 #chat .bad input{color:#679FD2;border:0;}
