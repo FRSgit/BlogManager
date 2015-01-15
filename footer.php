@@ -10,7 +10,7 @@
 	<div id="chatHide">
 		<div id="chatCont">
 			<div id="msgsContOut">
-				<textarea id="msgsCont" readonly="readonly" rows="15" cols="100">Loading messages...</textarea>
+				<textarea id="msgsCont" readonly="readonly" rows="15" cols="100" autocomplete="off">Loading messages...</textarea>
 			</div>
 			<div id="chatLeft">
 				<input id="chatName" name="chatName" tabindex="1" size="<?php echo $GLOBALS["CHAT_MAXLENGTH_AUTHOR"]+1; ?>" placeholder="Type in your name" maxlength="<?php echo $GLOBALS["CHAT_MAXLENGTH_AUTHOR"]; ?>" type="text" disabled="disabled" />

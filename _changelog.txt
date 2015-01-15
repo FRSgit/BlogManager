@@ -23,6 +23,8 @@
 - fixed condition when creating new blog or post
 
 
+- added long polling when getting chat's messages
+
 
 - fixed blog list sorting (function: sort_md_arr_by_id -> ids to upper case)
 
@@ -45,6 +47,10 @@
 
 
 - fixed alternate stylesheet loading bug in Google Chrome
+
+
+
+- added js chat
 
 
 

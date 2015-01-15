@@ -1,17 +1,19 @@
 <?php
 $startDate = time();
-if($GLOBALS["CHAT_TIME_TO_REFRESH"] > 13)
-	$refreshTime = $GLOBALS["CHAT_TIME_TO_REFRESH"];
-else if($GLOBALS["CHAT_TIME_TO_REFRESH"] < 1.5)
-	$refreshTime = $GLOBALS["CHAT_TIME_TO_REFRESH"]*18;
-else
-	$refreshTime = 26 - $GLOBALS["CHAT_TIME_TO_REFRESH"];
 $error = "Sorry, we have encountered some technical issues.\r\nError code: ";
 
 if(!empty($_POST)){
 	$webDate = floatval($_POST["chatDate"]);
 	if(!empty($webDate) && $webDate>0){
 		include_once("config.php");
+
+		if($GLOBALS["CHAT_TIME_TO_REFRESH"] > 13)
+			$refreshTime = $GLOBALS["CHAT_TIME_TO_REFRESH"];
+		else if($GLOBALS["CHAT_TIME_TO_REFRESH"] < 1.5)
+			$refreshTime = $GLOBALS["CHAT_TIME_TO_REFRESH"]*18;
+		else
+			$refreshTime = 26 - $GLOBALS["CHAT_TIME_TO_REFRESH"];
+
 		checkChat();
 	}else
 		die('{"error":'.json_encode($error."#chatRead002 :\r\nNo valid datetime was sended.").'}');
@@ -21,7 +23,6 @@ if(!empty($_POST)){
 
 function checkChat(){
 	global $startDate, $webDate, $refreshTime;
-	
 	if(time() - $startDate < $refreshTime){
 		if(file_exists($GLOBALS["CHAT_FILE_NAME"])){
 	    	$lines = file($GLOBALS["CHAT_FILE_NAME"]);

@@ -93,12 +93,17 @@ function loadStylesheetsBtns(){
 		usedStyleSheet = definedCookie;
 	}else
 		usedStyleSheet = (typeof document.preferredStyleSheetSet != 'undefined')?document.preferredStyleSheetSet:document.preferredStylesheetSet;
-
+	
 	for(var i=0;i<stylesArr.length;i++){
-		if(usedStyleSheet==stylesArr[i].title)
-			el.innerHTML+=' '+usedStyleSheet;
-		else
-			el.innerHTML+=' <a href="#" onclick="changePageStyle(\''+stylesArr[i].title+'\');return false;">'+stylesArr[i].title+'</a>'
+		if(el.innerHTML.indexOf(stylesArr[i].title)==-1){
+			if(usedStyleSheet==stylesArr[i].title)
+				el.innerHTML+=' '+usedStyleSheet;
+			else{
+				el.innerHTML+=' <a href="#" onclick="changePageStyle(\''+stylesArr[i].title+'\');return false;">'
+				+
+				stylesArr[i].title+'</a>';
+			}
+		}	
 	}
 	document.getElementById("wrapper").appendChild(el);
 }
@@ -107,6 +112,7 @@ function loadStylesheetsBtns(){
 
 var lastChatDate,
 	blockAjax,
+	blockSend,
 	defNamePlaceholder,
 	defMsgPlaceholder,
 	defTextareaValue,
@@ -146,6 +152,7 @@ function initChat(){
 	/* INIT VALUES */
 	lastChatDate = 1;
 	blockAjax = false;
+	blockSend = false;
 
 	chatTextarea.value = defTextareaValue;
 	chatName.disabled = false;
@@ -167,6 +174,8 @@ function removeChat(){
 		chatTextarea = document.getElementById("msgsCont");
 
 	chatTextarea.value = "";
+	blockSend = true;
+
 	chatName.disabled = true;
 	chatMsg.disabled = true;
 	chatDisableBtn();
@@ -256,28 +265,36 @@ function chatDisableBtn(){
 
 /* CHAT AJAX */
 function loadChatMsgs(){
-	chatRequestLoader = new XMLHttpRequest();
-	chatRequestLoader.addEventListener("readystatechange", handleRequest);
-	chatRequestLoader.open('POST', './chatRead.php', true);
-	chatRequestLoader.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-	chatRequestLoader.send('chatDate='+lastChatDate);
+	if(!blockSend){
+		chatRequestLoader = new XMLHttpRequest();
+		blockSend = true;
+		chatRequestLoader.addEventListener("readystatechange", handleRequest);
+		chatRequestLoader.open('POST', './chatRead.php', true);
+		chatRequestLoader.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+		chatRequestLoader.send('chatDate='+lastChatDate);
+	} 
 }
 
 function chatSendMsg(author, content){
-	if(author && content || chatValidator()){
-		author = (typeof content==='undefined')?encodeHtml(document.getElementById("chatName").value):author;
-		content = (typeof content==='undefined')?encodeHtml(document.getElementById("chatMsg").value.trim()):content;
-		document.getElementById("chatMsg").value = "";
+	if((author && content) || chatValidator()){
+		if(typeof content==='undefined'){
+			author = encodeHtml(document.getElementById("chatName").value);
+			content = encodeHtml(document.getElementById("chatMsg").value.trim());
+			document.getElementById("chatMsg").value = "";
+		}
 		if(!blockAjax){
+			chatDisableBtn();
+			document.getElementById("chatSend").removeEventListener("click",chatSendMsg);
+			document.removeEventListener("keydown", chatEnterHandler);
+
 			blockAjax = true;
 			var httpRequest = new XMLHttpRequest();
-			
 			httpRequest.onreadystatechange = handleRequest; 
 			httpRequest.open('POST', './chatSend.php', true);
 			httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			httpRequest.send('chatAuthor="'+author+'"&chatContent="'+content+'"');
 		}else
-			setTimeout(chatSendMsg(author, content),300);
+			setTimeout(chatSendMsg(author, content),600);
 	}	
 }
 
@@ -287,9 +304,12 @@ function handleRequest(e){
 		if(httpRequest.status === 200){
 			var response = JSON.parse(httpRequest.responseText);
 			if(!response.error&&response.error!=""){
-				if(response.msgAdd)
-					blackAjax = false;
-				else {
+				if(response.msgAdd){
+					blockAjax = false;
+					document.getElementById("chatSend").addEventListener("click",chatSendMsg);
+					document.addEventListener("keydown", chatEnterHandler);
+					chatEnableBtn();
+				}else {
 					if(!response.noMsg){
 						if(lastChatDate==1)
 					    	msgsCont.value=decodeHtml(response.content.trim());
@@ -303,7 +323,8 @@ function handleRequest(e){
 					}
 
 					msgsCont.scrollTop = msgsCont.scrollHeight;
-					blockAjax = false;
+					blockSend = false;
+
 					setTimeout(loadChatMsgs, CHAT_TIME_TO_REFRESH * 1000);
 				}		
 			}else
@@ -389,7 +410,7 @@ function changePageStyle(name, firstTime){
 		firstTime = typeof firstTime!=='undefined'?firstTime:0;
 
 	for (var i=0;i<links.length;i++){
-		if(links[i].rel.indexOf( "stylesheet" )!=-1 && links[i].title){
+		if(links[i].rel.indexOf( "stylesheet" )!=-1 && links[i].title && innerHTML.indexOf(links[i].title)==-1){
 			links[i].disabled = true;
 			if(links[i].title == name){
 				links[i].disabled = false;
@@ -398,7 +419,8 @@ function changePageStyle(name, firstTime){
 					innerHTML+=' '+name;
 			}else if(!firstTime)
 					innerHTML+=' <a href="#" onclick="changePageStyle(\''+links[i].title+'\');return false;">'+links[i].title+'</a>';
-		}
+		} else if(innerHTML.indexOf(links[i].title) != -1)
+			links[i].disabled = true;
 	}
 	if(!firstTime){
 		var menuEl = document.getElementById("colorVer");
