@@ -1,5 +1,4 @@
 <?php
-require_once("config.php");
 
 $error = "Sorry, we have encountered some technical issues. Error code: ";
 

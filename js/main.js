@@ -107,14 +107,16 @@ function loadStylesheetsBtns(){
 
 var lastChatDate,
 	blockAjax,
-	ajaxInterval,
 	defNamePlaceholder,
-	defMsgPlaceholder;
+	defMsgPlaceholder,
+	defTextareaValue,
+	chatRequestLoader;
 
 function handleChat(){
 	document.getElementById("chatHide").style.height=0;
-	defNamePlaceholder = document.getElementById("chatName").placeholder;
-	defMsgPlaceholder= document.getElementById("chatMsg").placeholder;
+	if(!defTextareaValue) defTextareaValue = document.getElementById("msgsCont").value;
+	if(!defNamePlaceholder) defNamePlaceholder = document.getElementById("chatName").placeholder;
+	if(!defMsgPlaceholder) defMsgPlaceholder = document.getElementById("chatMsg").placeholder;
 	document.getElementById("toggleChat").onchange = function(){
 		toggleChatWindow();
 	}
@@ -138,12 +140,14 @@ function toggleChatWindow(){
 
 function initChat(){
 	var chatMsg = document.getElementById("chatMsg"),
-		chatName = document.getElementById("chatName");
+		chatName = document.getElementById("chatName"),
+		chatTextarea = document.getElementById("msgsCont");
 	
 	/* INIT VALUES */
 	lastChatDate = 1;
 	blockAjax = false;
 
+	chatTextarea.value = defTextareaValue;
 	chatName.disabled = false;
 	chatName.placeholder = defNamePlaceholder;
 	chatMsg.disabled = false;
@@ -155,22 +159,26 @@ function initChat(){
 	document.getElementById("chatSend").addEventListener("click",chatSendMsg);
 	document.addEventListener("keydown", chatEnterHandler);
 	loadChatMsgs();
-	ajaxInterval = setInterval(loadChatMsgs,4000);
 }
 
 function removeChat(){
 	var chatMsg = document.getElementById("chatMsg"),
-		chatName= document.getElementById("chatName");
-	
+		chatName = document.getElementById("chatName"),
+		chatTextarea = document.getElementById("msgsCont");
+
+	chatTextarea.value = "";
 	chatName.disabled = true;
 	chatMsg.disabled = true;
 	chatDisableBtn();
 
+	if(chatRequestLoader){
+		chatRequestLoader.removeEventListener("readystatechange", handleRequest);
+		chatRequestLoader.abort();
+	}
 	chatName.removeEventListener("change",chatNameValidator);
 	chatMsg.removeEventListener("change",chatMsgValidator);
 	document.getElementById("chatSend").removeEventListener("click",chatSendMsg);
 	document.removeEventListener("keydown", chatEnterHandler);
-	clearInterval(ajaxInterval);
 }
 
 function restartChat(msg){
@@ -209,7 +217,7 @@ function chatValidator(){
 
 function chatNameValidator(){
 	var val = document.getElementById("chatName").value;
-	if(!val.length||val.length>20){
+	if(!val.length||val.length>CHAT_MAXLENGTH_AUTHOR){
 	    document.getElementById("chatName").parentNode.className = "bad";
 	    document.getElementById("chatName").placeholder = "This field is required";
 	    return false;
@@ -220,8 +228,8 @@ function chatNameValidator(){
 }
 
 function chatMsgValidator(){
-	var val = document.getElementById("chatMsg").value;
-	if(!val.length||val.length>250){
+	var val = document.getElementById("chatMsg").value.trim();
+	if(!val.length||val.length>CHAT_MAXLENGTH_MSG){
 	    document.getElementById("chatMsg").parentNode.className = "bad";
 	    document.getElementById("chatMsg").placeholder = "This field is required to a send message";
 	    return false;
@@ -248,32 +256,28 @@ function chatDisableBtn(){
 
 /* CHAT AJAX */
 function loadChatMsgs(){
-	if(!blockAjax){
-		blockAjax = true;
-		var httpRequest = new XMLHttpRequest();
-		httpRequest.onreadystatechange = handleRequest;
-		httpRequest.open('POST', './chat.php', true);
-		httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		httpRequest.send('chatDate='+lastChatDate);
-	}
+	chatRequestLoader = new XMLHttpRequest();
+	chatRequestLoader.addEventListener("readystatechange", handleRequest);
+	chatRequestLoader.open('POST', './chatRead.php', true);
+	chatRequestLoader.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+	chatRequestLoader.send('chatDate='+lastChatDate);
 }
 
-function chatSendMsg(content){
-	if(chatValidator()){
-		content = (typeof content!=='undefined'&&typeof content==='string')?content:encodeHtml(document.getElementById("chatMsg").value);
+function chatSendMsg(author, content){
+	if(author && content || chatValidator()){
+		author = (typeof content==='undefined')?encodeHtml(document.getElementById("chatName").value):author;
+		content = (typeof content==='undefined')?encodeHtml(document.getElementById("chatMsg").value.trim()):content;
 		document.getElementById("chatMsg").value = "";
 		if(!blockAjax){
 			blockAjax = true;
-			var httpRequest = new XMLHttpRequest(),
-				author = encodeHtml(document.getElementById("chatName").value);
+			var httpRequest = new XMLHttpRequest();
 			
 			httpRequest.onreadystatechange = handleRequest; 
-			httpRequest.open('POST', './chat.php', true);
+			httpRequest.open('POST', './chatSend.php', true);
 			httpRequest.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-			httpRequest.send('chatDate='+lastChatDate+'&chatAuthor="'+author+'"&chatContent="'+content+'"');
-		}else{
-			setTimeout(chatSendMsg(content),300);
-		}
+			httpRequest.send('chatAuthor="'+author+'"&chatContent="'+content+'"');
+		}else
+			setTimeout(chatSendMsg(author, content),300);
 	}	
 }
 
@@ -281,22 +285,31 @@ function handleRequest(e){
 	var httpRequest = e.target;
 	if(httpRequest.readyState === 4){
 		if(httpRequest.status === 200){
-			var response = JSON.parse(httpRequest.responseText),
-				msgsCont = document.getElementById("msgsCont");
+			var response = JSON.parse(httpRequest.responseText);
 			if(!response.error&&response.error!=""){
-			    if(lastChatDate==1)
-			    	msgsCont.value=decodeHtml(response.content.trim());
-			    else if(response.content&&response.content!="")
-			    	msgsCont.value+="\n"+decodeHtml(response.content.trim());
+				if(response.msgAdd)
+					blackAjax = false;
+				else {
+					if(!response.noMsg){
+						if(lastChatDate==1)
+					    	msgsCont.value=decodeHtml(response.content.trim());
+					    else if(response.content && response.content!="")
+					    	msgsCont.value+="\n"+decodeHtml(response.content.trim());
+						
+						if(response.date && response.date!="")
+							lastChatDate = response.date;
+						else
+							restartChat("Error!\n#2 Problem with loading the chat!\nWe'll try to restart chat now.\nIf problem still occurs please contact the administration.");
+					}
 
-				msgsCont.scrollTop = msgsCont.scrollHeight;
-			    if(response.date&&response.date!="")
-				lastChatDate = response.date;
-				blockAjax = false;
+					msgsCont.scrollTop = msgsCont.scrollHeight;
+					blockAjax = false;
+					setTimeout(loadChatMsgs, CHAT_TIME_TO_REFRESH * 1000);
+				}		
 			}else
 			    restartChat(response.error+"\nWe'll try to restart chat now.\nIf problem still occurs please contact the administration.");	
 		}else
-		    restartChat("Error!\nProblem with loading the chat!\nWe'll try to restart chat now.\nIf problem still occurs please contact the administration.");
+		    restartChat("Error!\n#1 Problem with loading the chat!\nWe'll try to restart chat now.\nIf problem still occurs please contact the administration.");
 	}
 };
 

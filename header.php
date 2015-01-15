@@ -11,7 +11,11 @@
 	<link rel="alternate stylesheet" type="text/css" href="css/blue.css" title="Blue" />
 	<link rel="alternate stylesheet" type="text/css" href="css/green.css" title="Green" />
 	<script type="text/javascript" src="js/main.js"></script>
+	<?php require_once("config.php"); ?>
 	<script type="text/javascript">
-		var MAX_ATTACHMENTS = <?php echo $MAXIUMUM_ATTACHMENTS; ?>;
+		var MAX_ATTACHMENTS = <?php echo $GLOBALS["MAXIUMUM_ATTACHMENTS"]; ?>;
+		var CHAT_TIME_TO_REFRESH = <?php echo $GLOBALS["CHAT_TIME_TO_REFRESH"]; ?>;
+		var CHAT_MAXLENGTH_AUTHOR = <?php echo $GLOBALS["CHAT_MAXLENGTH_AUTHOR"]; ?>;
+		var CHAT_MAXLENGTH_MSG = <?php echo $GLOBALS["CHAT_MAXLENGTH_MSG"]; ?>;
 	</script>
 </head>

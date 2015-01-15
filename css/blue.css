@@ -44,7 +44,7 @@ a{outline:0;}
 .formElem>label{width:50%;}
 .formElem>input,.formElem>select,.formElem>textarea{width:50%;padding:.5em 0 .5em 5px;}
 .formElem>textarea{resize:vertical;}
-.formElem>div{display:inline-block;width:50%;}
+.formElem>div{display:inline-block;width:50%;overflow:auto;}
 .formElem>div>.block{margin-bottom:10px;}
 .formElem>div>.block:last-child{margin-bottom:0;}
 .formElem>select{padding:.5em 5px;}
